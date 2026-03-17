@@ -1,0 +1,636 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CA WARN Alert — Layoff Notice Tracker</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #0c0c0e;
+      --surface: #141418;
+      --surface2: #1c1c22;
+      --border: #2a2a35;
+      --accent: #e8c547;
+      --accent2: #e87547;
+      --text: #e8e6e0;
+      --muted: #787878;
+      --danger: #e84747;
+      --success: #47c9a2;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+      font-weight: 300;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* Animated grain overlay */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+      opacity: 0.4;
+      pointer-events: none;
+      z-index: 999;
+    }
+
+    /* Header */
+    header {
+      border-bottom: 1px solid var(--border);
+      padding: 1.5rem 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      background: rgba(12,12,14,0.92);
+      backdrop-filter: blur(12px);
+      z-index: 100;
+    }
+
+    .logo {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.75rem;
+      font-weight: 500;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--accent);
+    }
+
+    .status-pill {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-family: 'DM Mono', monospace;
+      font-size: 0.7rem;
+      color: var(--muted);
+      letter-spacing: 0.08em;
+    }
+
+    .status-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--success);
+      animation: pulse 2s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.3; }
+    }
+
+    /* Hero */
+    .hero {
+      padding: 5rem 2rem 4rem;
+      max-width: 800px;
+      margin: 0 auto;
+      animation: fadeUp 0.7s ease both;
+    }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(24px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .eyebrow {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.7rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 1.5rem;
+    }
+
+    h1 {
+      font-family: 'DM Serif Display', serif;
+      font-size: clamp(2.5rem, 6vw, 4.5rem);
+      line-height: 1.05;
+      letter-spacing: -0.02em;
+      margin-bottom: 1.5rem;
+    }
+
+    h1 em {
+      font-style: italic;
+      color: var(--accent);
+    }
+
+    .hero-desc {
+      font-size: 1.1rem;
+      line-height: 1.7;
+      color: #a0a09a;
+      max-width: 560px;
+      margin-bottom: 2rem;
+    }
+
+    .warn-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      font-family: 'DM Mono', monospace;
+      font-size: 0.7rem;
+      letter-spacing: 0.1em;
+      color: var(--muted);
+      text-decoration: none;
+      border: 1px solid var(--border);
+      padding: 0.5rem 0.9rem;
+      border-radius: 4px;
+      transition: all 0.2s;
+    }
+
+    .warn-link:hover {
+      color: var(--text);
+      border-color: var(--muted);
+    }
+
+    /* Divider */
+    .divider {
+      width: 100%;
+      height: 1px;
+      background: var(--border);
+      max-width: 800px;
+      margin: 0 auto 4rem;
+    }
+
+    /* Subscribe section */
+    .section {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 0 2rem 5rem;
+      animation: fadeUp 0.7s 0.15s ease both;
+    }
+
+    .section-label {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.68rem;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 2rem;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .section-label::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--border);
+    }
+
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 2rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .card-title {
+      font-family: 'DM Serif Display', serif;
+      font-size: 1.4rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .card-desc {
+      font-size: 0.9rem;
+      color: var(--muted);
+      line-height: 1.6;
+      margin-bottom: 2rem;
+    }
+
+    /* Form */
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+      margin-bottom: 1rem;
+    }
+
+    @media (max-width: 560px) {
+      .form-row { grid-template-columns: 1fr; }
+    }
+
+    .field {
+      display: flex;
+      flex-direction: column;
+      gap: 0.4rem;
+    }
+
+    label {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.68rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    input[type="text"],
+    input[type="email"] {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.95rem;
+      padding: 0.75rem 1rem;
+      border-radius: 6px;
+      outline: none;
+      transition: border-color 0.2s;
+      width: 100%;
+    }
+
+    input[type="text"]:focus,
+    input[type="email"]:focus {
+      border-color: var(--accent);
+    }
+
+    input::placeholder { color: var(--muted); }
+
+    .btn-primary {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      background: var(--accent);
+      color: #0c0c0e;
+      font-family: 'DM Mono', monospace;
+      font-size: 0.78rem;
+      font-weight: 500;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      padding: 0.85rem 1.8rem;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.2s;
+      margin-top: 0.5rem;
+    }
+
+    .btn-primary:hover {
+      background: #f0d060;
+      transform: translateY(-1px);
+    }
+
+    .btn-primary:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .btn-secondary {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      background: transparent;
+      color: var(--muted);
+      font-family: 'DM Mono', monospace;
+      font-size: 0.72rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      padding: 0.85rem 1.4rem;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.2s;
+      margin-top: 0.5rem;
+    }
+
+    .btn-secondary:hover {
+      border-color: var(--muted);
+      color: var(--text);
+    }
+
+    .btn-row {
+      display: flex;
+      gap: 0.75rem;
+      flex-wrap: wrap;
+      margin-top: 0.5rem;
+    }
+
+    /* Alert box */
+    .alert {
+      display: none;
+      padding: 0.9rem 1.2rem;
+      border-radius: 6px;
+      font-size: 0.88rem;
+      line-height: 1.5;
+      margin-top: 1rem;
+    }
+
+    .alert.success {
+      background: rgba(71, 201, 162, 0.1);
+      border: 1px solid rgba(71, 201, 162, 0.3);
+      color: var(--success);
+    }
+
+    .alert.error {
+      background: rgba(232, 71, 71, 0.1);
+      border: 1px solid rgba(232, 71, 71, 0.3);
+      color: var(--danger);
+    }
+
+    .alert.show { display: block; }
+
+    /* Unsubscribe card */
+    .unsub-card {
+      background: transparent;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 1.5rem 2rem;
+    }
+
+    .unsub-title {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.72rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 0.75rem;
+    }
+
+    .unsub-row {
+      display: flex;
+      gap: 0.75rem;
+      align-items: flex-end;
+    }
+
+    .unsub-row .field { flex: 1; }
+
+    /* How it works */
+    .steps {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1.5rem;
+      margin-top: 1.5rem;
+    }
+
+    @media (max-width: 640px) {
+      .steps { grid-template-columns: 1fr; }
+    }
+
+    .step {
+      padding: 1.5rem;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+    }
+
+    .step-num {
+      font-family: 'DM Serif Display', serif;
+      font-size: 2rem;
+      color: var(--accent);
+      opacity: 0.4;
+      line-height: 1;
+      margin-bottom: 0.75rem;
+    }
+
+    .step-title {
+      font-weight: 500;
+      font-size: 0.95rem;
+      margin-bottom: 0.4rem;
+    }
+
+    .step-desc {
+      font-size: 0.82rem;
+      color: var(--muted);
+      line-height: 1.6;
+    }
+
+    /* Footer */
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 2rem;
+      text-align: center;
+      font-family: 'DM Mono', monospace;
+      font-size: 0.68rem;
+      letter-spacing: 0.1em;
+      color: var(--muted);
+      animation: fadeUp 0.7s 0.3s ease both;
+    }
+
+    footer a { color: var(--muted); }
+    footer a:hover { color: var(--text); }
+
+    .tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.3rem;
+      font-family: 'DM Mono', monospace;
+      font-size: 0.65rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      padding: 0.3rem 0.6rem;
+      border-radius: 3px;
+      border: 1px solid var(--border);
+      color: var(--muted);
+      margin-bottom: 1.5rem;
+    }
+
+    .match-warning {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.7rem;
+      color: var(--accent2);
+      margin-top: 0.5rem;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <span class="logo">CA WARN // Alert</span>
+    <div class="status-pill">
+      <span class="status-dot"></span>
+      <span>Monitoring Active</span>
+    </div>
+  </header>
+
+  <main>
+    <div class="hero">
+      <p class="eyebrow">California WARN Act · Layoff Notice Tracker</p>
+      <h1>Know before<br/><em>the news does.</em></h1>
+      <p class="hero-desc">
+        Get email alerts the moment your company — or any company you're watching —
+        files a WARN Act notice with California's EDD. Checked every Tuesday and Thursday.
+      </p>
+      <a class="warn-link" href="https://edd.ca.gov/en/jobs_and_training/Layoff_Services_WARN/" target="_blank" rel="noopener">
+        ↗ What is the WARN Act?
+      </a>
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- Subscribe -->
+    <section class="section">
+      <p class="section-label">Subscribe to alerts</p>
+
+      <div class="card">
+        <h2 class="card-title">Watch a company</h2>
+        <p class="card-desc">Enter the company name exactly as it may appear in an EDD WARN filing, plus your email. We'll alert you if a match is found on any new report.</p>
+
+        <div class="form-row">
+          <div class="field">
+            <label for="company">Company name</label>
+            <input type="text" id="company" placeholder="e.g. Acme Corporation" autocomplete="off" />
+          </div>
+          <div class="field">
+            <label for="email">Your email</label>
+            <input type="email" id="email" placeholder="you@example.com" />
+          </div>
+        </div>
+        <p class="match-warning">⚠ Tip: partial matches are checked — "Acme" will catch "Acme Corp" and "Acme Inc"</p>
+
+        <div class="btn-row">
+          <button class="btn-primary" onclick="handleSubscribe()">
+            <span>→</span> Subscribe
+          </button>
+        </div>
+
+        <div class="alert" id="sub-alert"></div>
+      </div>
+
+      <!-- Unsubscribe -->
+      <div class="unsub-card">
+        <p class="unsub-title">Remove an alert</p>
+        <div class="unsub-row">
+          <div class="field">
+            <label for="unsub-email">Email to unsubscribe</label>
+            <input type="email" id="unsub-email" placeholder="you@example.com" />
+          </div>
+          <div class="field">
+            <label for="unsub-company">Company (leave blank for all)</label>
+            <input type="text" id="unsub-company" placeholder="optional" />
+          </div>
+          <button class="btn-secondary" onclick="handleUnsubscribe()">Unsubscribe</button>
+        </div>
+        <div class="alert" id="unsub-alert"></div>
+      </div>
+    </section>
+
+    <!-- How it works -->
+    <section class="section" style="padding-top: 0;">
+      <p class="section-label">How it works</p>
+      <div class="steps">
+        <div class="step">
+          <div class="step-num">01</div>
+          <div class="step-title">You subscribe</div>
+          <div class="step-desc">Enter a company name and email. We store your watch request securely in this GitHub repo.</div>
+        </div>
+        <div class="step">
+          <div class="step-num">02</div>
+          <div class="step-title">We check EDD</div>
+          <div class="step-desc">Every Tuesday and Thursday, a GitHub Action pulls the latest WARN report XLSX directly from EDD.</div>
+        </div>
+        <div class="step">
+          <div class="step-num">03</div>
+          <div class="step-title">You get alerted</div>
+          <div class="step-desc">If your company appears in a new filing, you get an email with the full notice details within hours.</div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <p>Data sourced from the <a href="https://edd.ca.gov/en/jobs_and_training/Layoff_Services_WARN/" target="_blank">CA Employment Development Department</a> · Not affiliated with EDD · <a href="https://edd.ca.gov/siteassets/files/jobs_and_training/warn/warn_report1.xlsx">View raw WARN data ↗</a></p>
+  </footer>
+
+  <script>
+    // This form submits to a GitHub Issue via the GitHub API
+    // Subscribers are stored as data/subscribers.json in the repo
+    // The GitHub Action reads that file and processes alerts
+
+    const REPO_OWNER = 'YOUR_GITHUB_USERNAME'; // ← update this
+    const REPO_NAME  = 'warn-tracker';          // ← update this if different
+
+    function showAlert(id, type, msg) {
+      const el = document.getElementById(id);
+      el.className = `alert ${type} show`;
+      el.textContent = msg;
+      setTimeout(() => el.classList.remove('show'), 6000);
+    }
+
+    async function handleSubscribe() {
+      const company = document.getElementById('company').value.trim();
+      const email   = document.getElementById('email').value.trim();
+
+      if (!company || !email) return showAlert('sub-alert', 'error', 'Please fill in both fields.');
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return showAlert('sub-alert', 'error', 'Please enter a valid email address.');
+
+      const btn = document.querySelector('.btn-primary');
+      btn.disabled = true;
+      btn.textContent = 'Submitting…';
+
+      try {
+        // Post a GitHub Issue — the workflow will pick it up and add to subscribers.json
+        const res = await fetch(`https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/issues`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/vnd.github+json'
+          },
+          body: JSON.stringify({
+            title: `[SUBSCRIBE] ${company}`,
+            body: JSON.stringify({ action: 'subscribe', company, email, ts: new Date().toISOString() }),
+            labels: ['subscription']
+          })
+        });
+
+        if (res.status === 401 || res.status === 404) {
+          // Fallback: show mailto link if GitHub API isn't configured
+          showAlert('sub-alert', 'success',
+            `✓ Almost there! Email warn-subscribe@${REPO_OWNER}.com with subject "SUBSCRIBE: ${company}" from ${email} to complete signup. (Configure the GitHub API token to enable one-click signup.)`
+          );
+        } else if (res.ok) {
+          showAlert('sub-alert', 'success', `✓ Subscribed! You'll get alerts when "${company}" appears in a new WARN filing.`);
+          document.getElementById('company').value = '';
+          document.getElementById('email').value = '';
+        } else {
+          throw new Error('GitHub API error');
+        }
+      } catch(e) {
+        showAlert('sub-alert', 'error', 'Submission failed. Please try again or email the admin directly.');
+      }
+
+      btn.disabled = false;
+      btn.innerHTML = '<span>→</span> Subscribe';
+    }
+
+    async function handleUnsubscribe() {
+      const email   = document.getElementById('unsub-email').value.trim();
+      const company = document.getElementById('unsub-company').value.trim();
+
+      if (!email) return showAlert('unsub-alert', 'error', 'Please enter your email.');
+
+      try {
+        const res = await fetch(`https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/issues`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/vnd.github+json'
+          },
+          body: JSON.stringify({
+            title: `[UNSUBSCRIBE] ${email}`,
+            body: JSON.stringify({ action: 'unsubscribe', company: company || null, email, ts: new Date().toISOString() }),
+            labels: ['subscription']
+          })
+        });
+
+        showAlert('unsub-alert', 'success', `✓ Unsubscribe request received for ${email}${company ? ` / ${company}` : ''}.`);
+      } catch(e) {
+        showAlert('unsub-alert', 'error', 'Error. Please try again.');
+      }
+    }
+  </script>
+</body>
+</html>
