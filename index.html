@@ -723,7 +723,8 @@
     const REPO_OWNER = 'YOUR_GITHUB_USERNAME';
     const REPO_NAME  = 'warnalerts';
 
-    const WARN_XLSX_URL = 'https://edd.ca.gov/siteassets/files/jobs_and_training/warn/warn_report1.xlsx';
+    // Reads the cached copy committed by the GitHub Action (no CORS issues)
+    const WARN_XLSX_URL = './data/warn_report.xlsx';
 
     // ── LIVE SEARCH ──────────────────────────────────────────────────────────
     let warnData   = null;   // parsed rows
@@ -772,7 +773,7 @@
         showState('idle');
         elIdle.innerHTML = `
           <div class="results-state-icon">⚠</div>
-          <div class="results-state-text">Could not load WARN data.<br/>This may be a CORS issue in local preview.<br/>It works when hosted on GitHub Pages.</div>`;
+          <div class="results-state-text">Could not load WARN data.<br/>The GitHub Action may not have run yet.<br/>Go to Actions → Run workflow to fetch the latest report.</div>`;
         return false;
       }
     }
