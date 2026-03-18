@@ -28,11 +28,18 @@ jobs:
       - name: Install dependencies
         run: pip install requests openpyxl resend
 
-      - name: Download and cache WARN XLSX for website search
+          - name: Download and cache WARN XLSX for website search
         run: |
-          curl -L -o data/warn_report.xlsx \
-            "https://edd.ca.gov/siteassets/files/jobs_and_training/warn/warn_report1.xlsx"
-          echo "Cached WARN XLSX ($(du -h data/warn_report.xlsx | cut -f1))"
+          python - <<'EOF'
+          import requests
+          url = "https://edd.ca.gov/siteassets/files/jobs_and_training/warn/warn_report1.xlsx"
+          headers = {"User-Agent": "Mozilla/5.0 CA-WARN-Tracker/1.0"}
+          r = requests.get(url, headers=headers, timeout=30)
+          r.raise_for_status()
+          with open("data/warn_report.xlsx", "wb") as f:
+              f.write(r.content)
+          print(f"Downloaded {len(r.content)//1024}KB")
+          EOF
 
       - name: Process pending subscriptions (from GitHub Issues)
         env:
