@@ -59,5 +59,5 @@ jobs:
           git config user.name  "WARN Bot"
           git config user.email "warn-bot@users.noreply.github.com"
           git add data/
-          git diff --staged --quiet || git commit -m "chore: update WARN cache and subscriber data [skip ci]"
+          git diff --staged --quiet || git commit -m "chore: update WARN cache and subscriber data"
           git push
