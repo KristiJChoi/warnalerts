@@ -899,43 +899,21 @@
       setTimeout(() => el.classList.remove('show'), 7000);
     }
 
-    async function handleSubscribe() {
+    function handleSubscribe() {
       const company = document.getElementById('company').value.trim();
       const email   = document.getElementById('email').value.trim();
 
       if (!company || !email) return showAlert('sub-alert', 'error', 'Please fill in both fields.');
       if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return showAlert('sub-alert', 'error', 'Please enter a valid email.');
 
-      const btn = document.getElementById('sub-btn');
-      btn.disabled = true;
-      btn.textContent = 'Submitting…';
+      const subject = encodeURIComponent(`WARN Alert Signup: ${company}`);
+      const body    = encodeURIComponent(`Please add me to WARN alerts for:\n\nCompany: ${company}\nEmail: ${email}`);
+      window.location.href = `mailto:kristijchoi@gmail.com?subject=${subject}&body=${body}`;
 
-      try {
-        const res = await fetch(`https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/issues`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json', 'Accept': 'application/vnd.github+json' },
-          body: JSON.stringify({
-            title: `[SUBSCRIBE] ${company}`,
-            body: JSON.stringify({ action: 'subscribe', company, email, ts: new Date().toISOString() }),
-            labels: ['subscription']
-          })
-        });
-
-        if (res.ok) {
-          showAlert('sub-alert', 'success', `✓ Subscribed! You'll get alerts when "${company}" appears in a new WARN filing.`);
-          document.getElementById('company').value = '';
-          document.getElementById('email').value = '';
-        } else {
-          throw new Error();
-        }
-      } catch(e) {
-        showAlert('sub-alert', 'error', 'Submission failed. Check your GitHub repo config or try again.');
-      }
-
-      btn.disabled = false;
-      btn.textContent = '→ Subscribe';
+      showAlert('sub-alert', 'success', `✓ Your email app should open — just hit send! We'll add you within 24 hours.`);
+      document.getElementById('company').value = '';
+      document.getElementById('email').value = '';
     }
-
     async function handleUnsubscribe() {
       const email   = document.getElementById('unsub-email').value.trim();
       const company = document.getElementById('unsub-company').value.trim();
