@@ -758,7 +758,7 @@
         if (!resp.ok) throw new Error('Fetch failed');
         const buf  = await resp.arrayBuffer();
         const wb   = XLSX.read(buf, { type: 'array', cellDates: true });
-        const ws   = wb.Sheets[wb.SheetNames[0]];
+        const ws   = wb.Sheets['Detailed WARN Report'] || wb.Sheets[wb.SheetNames[2]] || wb.Sheets[wb.SheetNames[0]];
         const rows = XLSX.utils.sheet_to_json(ws, { defval: '' });
 
         if (!rows.length) throw new Error('Empty sheet');
